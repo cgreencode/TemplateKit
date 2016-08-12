@@ -21,6 +21,7 @@ public protocol PropertyProvider: class {
 public protocol View: Renderable {
   static var propertyTypes: [String: Validator] { get }
 
+  var frame: CGRect { get }
   var calculatedFrame: CGRect? { set get }
   var propertyProvider: PropertyProvider? { set get }
 

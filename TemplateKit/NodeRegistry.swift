@@ -1,5 +1,5 @@
 public class NodeRegistry {
-  static let shared = NodeRegistry()
+  static let sharedInstance: NodeRegistry = NodeRegistry()
 
   public typealias NodeInstanceProvider = () -> Node
   private lazy var definitions = [String: NodeInstanceProvider]()
@@ -21,16 +21,11 @@ public class NodeRegistry {
   }
 
   private func registerDefaultTypes() {
-    registerDefinition("Box") {
+    registerDefinition("Box") { properties in
       return BoxNode()
     }
-
-    registerDefinition("Text") {
+    registerDefinition("Text") { properties in
       return ViewNode<TextView>()
-    }
-
-    registerDefinition("Image") {
-      return ViewNode<ImageView>()
     }
   }
 }

@@ -28,6 +28,22 @@ public class BoxView: View {
 
   public weak var propertyProvider: PropertyProvider?
 
+  public var frame: CGRect {
+    let resolve: (CGFloat? -> CGFloat) = { value in
+      if let value = value where !isnan(value) {
+        return value
+      }
+      return FlexNode.Undefined
+    }
+
+    let x: CGFloat? = propertyProvider?.get("x")
+    let y: CGFloat? = propertyProvider?.get("y")
+    let width: CGFloat? = propertyProvider?.get("width")
+    let height: CGFloat? = propertyProvider?.get("height")
+
+    return CGRect(x: resolve(x), y: resolve(y), width: resolve(width), height: resolve(height))
+  }
+
   public var calculatedFrame: CGRect?
 
   public var flexDirection: FlexDirection? {
@@ -95,17 +111,7 @@ typealias FlexNode = SwiftBox.Node
 
 extension View {
   var flexSize: CGSize {
-    let resolve: (CGFloat? -> CGFloat) = { value in
-      if let value = value where !isnan(value) {
-        return value
-      }
-      return FlexNode.Undefined
-    }
-
-    let width: CGFloat? = propertyProvider?.get("width")
-    let height: CGFloat? = propertyProvider?.get("height")
-
-    return CGSize(width: width ?? FlexNode.Undefined, height: height ?? FlexNode.Undefined)
+    return CGSize(width: frame.width ?? FlexNode.Undefined, height: frame.height ?? FlexNode.Undefined)
   }
 }
 
@@ -115,29 +121,16 @@ protocol FlexNodeProvider {
 
 extension BoxView: FlexNodeProvider {
   var flexNode: FlexNode {
-    let flexNodes: [FlexNode] = children.map {
-      guard let flexNodeProvider = $0 as? FlexNodeProvider else {
-        fatalError("Child in a Box node must implement the FlexNodeProvider protocol")
-      }
-
-      return flexNodeProvider.flexNode
-    }
+    let flexNodes = children.map { ($0 as! FlexNodeProvider).flexNode }
     return FlexNode(size: flexSize, children: flexNodes, direction: flexDirection?.value ?? .Row, margin: Edges(), padding: Edges(), wrap: false, justification: .FlexStart, selfAlignment: .Auto, childAlignment: .Stretch, flex: flex ?? 0)
   }
 }
 
 extension TextView: FlexNodeProvider {
   var flexNode: FlexNode {
-    let measure: (CGFloat -> CGSize) = { [weak self] width in
-      let effectiveWidth = isnan(width) ? CGFloat.max : width
-      return self?.sizeThatFits(CGSize(width: effectiveWidth, height: CGFloat.max)) ?? CGSizeZero
+    let measure = { [weak self] width in
+      return self?.sizeThatFits(CGSize(width: width, height: CGFloat.max)) ?? CGSizeZero
     }
     return FlexNode(measure: measure)
-  }
-}
-
-extension ImageView: FlexNodeProvider {
-  var flexNode: FlexNode {
-    return FlexNode(size: flexSize)
   }
 }
