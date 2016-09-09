@@ -1,6 +1,5 @@
 <box width="$width" height="$height" paddingTop="60">
-  <text text="Increment" onTap="$incrementCounter" />
-  <text text="$count" />
+  <text text="Add row" />
   <details backgroundColor="#ff00ff" />
 </box>
 
