@@ -34,7 +34,10 @@ public class Box: UIView, NativeView {
       var pendingViews = Set(subviews)
 
       for (index, child) in (children ?? []).enumerated() {
-        let childView = child as! UIView
+        guard let childView = child as? UIView else {
+          fatalError()
+        }
+
         insertSubview(childView, at: index)
         pendingViews.remove(childView)
       }

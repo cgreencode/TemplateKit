@@ -14,7 +14,7 @@ public protocol Node: class, MutablePropertyHolder, Keyable {
   func update(with newElement: Element)
   func computeLayout() -> CSSLayout
 
-  func insert(child: Node, at index: Int)
+  func insert(child: Node, at index: Int?)
   func remove(child: Node)
   func index(of child: Node) -> Int?
 
@@ -41,10 +41,10 @@ public extension Node {
     return current
   }
 
-  func insert(child: Node, at index: Int) {
-    children?.insert(child, at: index)
+  func insert(child: Node, at index: Int? = nil) {
+    children?.insert(child, at: index ?? children!.endIndex)
     let _ = child.maybeBuildCSSNode()
-    cssNode?.insertChild(child: child.maybeBuildCSSNode(), at: index)
+    cssNode?.insertChild(child: child.maybeBuildCSSNode(), at: index ?? children!.endIndex - 1)
   }
 
   func remove(child: Node) {
@@ -138,13 +138,15 @@ public extension Node {
 
   func replace(_ instance: Node, with element: Element) {
     let replacement = element.build(with: owner)
-    let index = self.index(of: instance)!
+    guard let index = index(of: instance) else {
+      fatalError()
+    }
     remove(child: instance)
     insert(child: replacement, at: index)
   }
 
   func append(_ element: Element) {
-    insert(child: element.build(with: owner), at: children!.endIndex)
+    insert(child: element.build(with: owner))
   }
 
   func computeKey(_ index: Int, _ keyable: Keyable) -> String {

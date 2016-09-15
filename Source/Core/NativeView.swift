@@ -37,3 +37,4 @@ extension NativeView {
     return commonPropertyTypes
   }
 }
+
