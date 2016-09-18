@@ -109,7 +109,7 @@ public extension Component {
     let layout = self.computeLayout()
 
     DispatchQueue.main.async {
-      let _ = self.build()
+      let _ = self.root?.build()
       self.root?.builtView?.applyLayout(layout: layout)
     }
   }
@@ -123,13 +123,14 @@ public extension Component {
   }
 
   func performDiff() {
-//    let rendered = render()
-//    // The case where the root node changes type.
-//    if shouldReplace(instance, with: rendered) {
-//      instance = rendered.build(with: self, context: context)
-//    } else {
-    instance.update(with: render())
-//    }
+    let rendered = render()
+    // The case where the root node changes type.
+    if shouldReplace(instance, with: rendered) {
+      instance = rendered.build(with: self, context: context)
+      root?.cssNode = nil
+    } else {
+      instance.update(with: rendered)
+    }
   }
 
   func getContext() -> Context {
