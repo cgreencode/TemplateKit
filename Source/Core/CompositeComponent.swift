@@ -16,7 +16,7 @@ public func ==(lhs: EmptyState, rhs: EmptyState) -> Bool {
   return true
 }
 
-open class CompositeComponent<StateType: State>: Component where StateType: Equatable {
+open class CompositeComponent<StateType: State where StateType: Equatable>: Component {
   public var owner: Component?
   public var element: Element?
   public var context: Context?

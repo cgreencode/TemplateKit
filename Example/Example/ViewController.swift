@@ -22,8 +22,9 @@ class ViewController: UIViewController {
 
     templateService?.fetchTemplates(withURLs: [Todo.location]) { result in
       DispatchQueue.global(qos: .background).async {
-        UIKitRenderer.render(Element(ElementType.component(App.self)), container: self.view) { [weak self] component in
+        UIKitRenderer.render(Element(ElementType.component(App.self))) { [weak self] component, view in
           self?.appComponent = component as? App
+          self?.view.addSubview(view)
         }
 //        self.watchTemplates()
       }
