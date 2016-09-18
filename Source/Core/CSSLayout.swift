@@ -274,7 +274,9 @@ public class CSSNode {
 
   var measure: CSSMeasureFunc? {
     set {
-      CSSNodeSetMeasureFunc(nodeRef, newValue)
+      if let newValue = newValue {
+        CSSNodeSetMeasureFunc(nodeRef, newValue)
+      }
     }
     get {
       return CSSNodeGetMeasureFunc(nodeRef)
@@ -283,7 +285,9 @@ public class CSSNode {
 
   var context: UnsafeMutableRawPointer? {
     set {
-      CSSNodeSetContext(nodeRef, newValue)
+      if let newValue = newValue {
+        CSSNodeSetContext(nodeRef, newValue)
+      }
     }
     get {
       return CSSNodeGetContext(nodeRef)
@@ -357,7 +361,7 @@ public class CSSNode {
 
   func layout(availableWidth: Float = Float.nan, availableHeight: Float = Float.nan) -> CSSLayout {
     CSSNodeCalculateLayout(nodeRef, availableWidth, availableHeight, CSSDirectionLTR)
-//    debugPrint()
+    debugPrint()
     return CSSLayout(nodeRef: nodeRef)
   }
 
