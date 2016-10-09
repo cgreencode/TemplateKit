@@ -44,11 +44,18 @@ public class XMLTemplateService: TemplateService {
   let styleSheetResourceService = ResourceService<StyleSheetParser>()
 
   private let liveReload: Bool
-  public lazy var templates = [URL: Template]()
+  private lazy var cache = [URL: Template]()
   private lazy var observers = [URL: NSHashTable<AnyObject>]()
 
   public init(liveReload: Bool = false) {
     self.liveReload = liveReload
+  }
+
+  public func element(withLocation location: URL, model: Model) throws -> Element {
+    guard let element = try cache[location]?.makeElement(with: model) else {
+      throw TemplateKitError.missingTemplate("Template not found for \(location)")
+    }
+    return element
   }
 
   public func fetchTemplates(withURLs urls: [URL], completion: @escaping (Result<Void>) -> Void) {
@@ -66,8 +73,7 @@ public class XMLTemplateService: TemplateService {
           }
 
           self?.resolveStyles(for: templateXML, at: url) { styleSheet in
-            print(self, url)
-            self?.templates[url] = Template(elementProvider: componentElement, styleSheet: styleSheet)
+            self?.cache[url] = Template(elementProvider: componentElement, styleSheet: styleSheet)
             pendingURLs.remove(url)
             if pendingURLs.isEmpty {
               completion(.success())
@@ -137,10 +143,10 @@ public class XMLTemplateService: TemplateService {
   private func watchTemplates(withURLs urls: [URL]) {
     let time = DispatchTime.now() + liveReloadInterval
     DispatchQueue.main.asyncAfter(deadline: time) {
-      let cachedCopies = self.templates
+      let cachedCopies = self.cache
       self.fetchTemplates(withURLs: urls) { [weak self] result in
         for url in urls {
-          if self?.templates[url] != cachedCopies[url], let observers = self?.observers[url] {
+          if self?.cache[url] != cachedCopies[url], let observers = self?.observers[url] {
             for observer in observers.allObjects {
               (observer as! Node).forceUpdate()
             }
@@ -172,9 +178,9 @@ extension XMLDocument {
 }
 
 extension XMLElement: ElementProvider {
-  func build(with model: Model) throws -> Element {
+  func makeElement(with model: Model) throws -> Element {
     let resolvedProperties = model.resolve(properties: attributes)
-    return NodeRegistry.shared.buildElement(with: name, properties: resolvedProperties, children: try children.map { try $0.build(with: model) })
+    return NodeRegistry.shared.buildElement(with: name, properties: resolvedProperties, children: try children.map { try $0.makeElement(with: model) })
   }
 
   func equals(_ other: ElementProvider?) -> Bool {

@@ -162,7 +162,7 @@ class App: CompositeComponent<AppState, AppProperties, UIView> {
     } ?? 0
   }
 
-  override func render() -> Template {
+  override func render() -> Element {
     var children = [
       renderHeader()
     ]
@@ -179,15 +179,15 @@ class App: CompositeComponent<AppState, AppProperties, UIView> {
     var properties = DefaultProperties()
     properties.core.layout = self.properties.core.layout
 
-    return Template(elementProvider: box(properties, children), styleSheet: nil)
+    return ElementData(ElementType.box, properties, children)
   }
 
   private func renderHeader() -> Element {
-    return try! render(Bundle.main.url(forResource: "Header", withExtension: "xml")!).build(with: self)
+    return render(Bundle.main.url(forResource: "Header", withExtension: "xml")!)
   }
 
   private func renderMain() -> Element {
-    return view(todosList, DefaultProperties(["flexGrow": Float(1)]))
+    return ElementData(ElementType.view(todosList), DefaultProperties(["flexGrow": Float(1)]))
   }
 
   private func renderFooter(activeCount: Int, completedCount: Int) -> Element {
@@ -197,6 +197,6 @@ class App: CompositeComponent<AppState, AppProperties, UIView> {
     properties.onClearCompleted = #selector(App.handleClearCompleted)
     properties.onUpdateFilter = #selector(App.handleUpdateFilter(filter:))
     properties.nowShowing = state.nowShowing
-    return component(Footer.self, properties)
+    return ElementData(ElementType.component(Footer.self), properties)
   }
 }
